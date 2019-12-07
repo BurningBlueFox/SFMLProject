@@ -3,12 +3,16 @@
 #include <vector>
 #include "Enemy.h"
 #include "Hero.h"
+#include "Rocket.h"
 
 sf::Vector2f viewSize(1024, 768);
 sf::VideoMode vm(viewSize.x, viewSize.y);
 sf::RenderWindow window(vm, "Hello Test", sf::Style::Default);
 
 void spawnEnemy();
+void shoot();
+
+bool checkCollision(sf::Sprite sprite1, sf::Sprite sprite2);
 
 sf::Texture skyTexture;
 sf::Texture bgTexture;
@@ -18,6 +22,7 @@ sf::Sprite bgSprite;
 
 Hero hero;
 std::vector<Enemy*> enemies;
+std::vector<Rocket*> rockets;
 
 float currentTime;
 float prevTime = 0.0f;
@@ -74,6 +79,29 @@ void spawnEnemy()
 	enemies.push_back(enemy);
 }
 
+void shoot()
+{
+	Rocket* rocket = new Rocket();
+	rocket->init("Assets/graphics/rocket.png", hero.getSprite().getPosition(), 400.0f);
+
+	rockets.push_back(rocket);
+}
+
+bool checkCollision(sf::Sprite sprite1, sf::Sprite sprite2)
+{
+	sf::FloatRect shape1 = sprite1.getGlobalBounds();
+	sf::FloatRect shape2 = sprite2.getGlobalBounds();
+
+	if (shape1.intersects(shape2))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void updateInput()
 {
 
@@ -87,6 +115,10 @@ void updateInput()
 			if (event.key.code == sf::Keyboard::Up)
 			{
 				hero.jump(750.0f);
+			}
+			if (event.key.code == sf::Keyboard::Down)
+			{
+				shoot();
 			}
 		}
 
@@ -125,6 +157,43 @@ void update(float dt)
 		}
 	}
 
+	//Update Rockets
+
+	for (int i = 0; i < rockets.size(); i++)
+	{
+		Rocket* rocket = rockets[i];
+
+		rocket->update(dt);
+
+		if (rocket->getSprite().getPosition().x > viewSize.x)
+		{
+			rockets.erase(rockets.begin() + i);
+			delete(rocket);
+		}
+	}
+
+	//Check collision between rocket and enemie
+	for (int i = 0; i < rockets.size(); i++)
+	{
+		for (int j = 0; j < enemies.size(); j++)
+		{
+
+			Rocket* rocket = rockets[i];
+			Enemy* enemy = enemies[j];
+
+			if (checkCollision(rocket->getSprite(), enemy->getSprite()))
+			{
+				rockets.erase(rockets.begin() + i);
+				enemies.erase(enemies.begin() + j);
+
+				delete(rocket);
+				delete(enemy);
+
+				printf("Rocket intersects enemy \n");
+			}
+
+		}
+	}
 
 }
 
@@ -137,6 +206,11 @@ void draw()
 	for (Enemy* enemy : enemies)
 	{
 		window.draw(enemy->getSprite());
+	}
+
+	for (Rocket* rocket : rockets)
+	{
+		window.draw(rocket->getSprite());
 	}
 }
 
