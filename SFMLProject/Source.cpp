@@ -13,6 +13,7 @@ void spawnEnemy();
 void shoot();
 
 bool checkCollision(sf::Sprite sprite1, sf::Sprite sprite2);
+void reset();
 
 sf::Texture skyTexture;
 sf::Texture bgTexture;
@@ -26,6 +27,9 @@ std::vector<Rocket*> rockets;
 
 float currentTime;
 float prevTime = 0.0f;
+
+int score = 0;
+bool isGameover = true;
 
 sf::Vector2f playerPosition;
 bool playerMoving = false;
@@ -102,6 +106,26 @@ bool checkCollision(sf::Sprite sprite1, sf::Sprite sprite2)
 	}
 }
 
+void reset()
+{
+	score = 0;
+	currentTime = 0.0f;
+	prevTime = 0.0f;
+
+	for (Enemy* enemy : enemies)
+	{
+		delete(enemy);
+	}
+
+	for (Rocket* rocket : rockets)
+	{
+		delete(rocket);
+	}
+
+	enemies.clear();
+	rockets.clear();
+}
+
 void updateInput()
 {
 
@@ -118,7 +142,16 @@ void updateInput()
 			}
 			if (event.key.code == sf::Keyboard::Down)
 			{
-				shoot();
+				if (isGameover)
+				{
+					isGameover = false;
+					reset();
+				}
+				else
+				{
+					shoot();
+				}
+
 			}
 		}
 
@@ -153,6 +186,7 @@ void update(float dt)
 
 			enemies.erase(enemies.begin() + i);
 			delete(enemy);
+			isGameover = true;
 
 		}
 	}
@@ -183,6 +217,8 @@ void update(float dt)
 
 			if (checkCollision(rocket->getSprite(), enemy->getSprite()))
 			{
+				score++;
+
 				rockets.erase(rockets.begin() + i);
 				enemies.erase(enemies.begin() + j);
 
@@ -227,6 +263,8 @@ int main()
 
 		// Update Game 
 		sf::Time dt = clock.restart();
+
+		if(!isGameover)
 		update(dt.asSeconds());
 
 		window.clear(sf::Color::Red);
