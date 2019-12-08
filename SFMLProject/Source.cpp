@@ -31,6 +31,15 @@ float prevTime = 0.0f;
 int score = 0;
 bool isGameover = true;
 
+//Text
+sf::Font headingFont;
+sf::Text headingText;
+
+sf::Font scoringFont;
+sf::Text scoringText;
+
+sf::Text tutorialText;
+
 sf::Vector2f playerPosition;
 bool playerMoving = false;
 
@@ -44,6 +53,38 @@ void init()
 	// Set and  Attach Texture to Sprite 
 	skySprite.setTexture(skyTexture);
 	bgSprite.setTexture(bgTexture);
+
+	headingFont.loadFromFile("Assets/fonts/SnackerComic.ttf");
+	headingText.setFont(headingFont);
+	headingText.setString("Tiny Bazooka");
+	headingText.setCharacterSize(84);
+	headingText.setFillColor(sf::Color::Red);
+
+	scoringFont.loadFromFile("Assets/fonts/arial.ttf");
+	scoringText.setFont(scoringFont);
+	scoringText.setString("Score:0");
+	scoringText.setCharacterSize(45);
+	scoringText.setFillColor(sf::Color::Red);
+
+	// Tutorial Text 
+
+	tutorialText.setFont(scoringFont);
+	tutorialText.setString("Press Down Arrow to Fire and Start Game, Up Arrow to Jump");
+	tutorialText.setCharacterSize(35);
+	tutorialText.setFillColor(sf::Color::Red);
+
+
+	sf::FloatRect headingBounds = headingText.getLocalBounds();
+	headingText.setOrigin(headingBounds.width / 2, headingBounds.height / 2);
+	headingText.setPosition(sf::Vector2f(viewSize.x * 0.5f, viewSize.y * 0.1f));
+
+	sf::FloatRect scoringBounds = scoringText.getLocalBounds();
+	scoringText.setOrigin(scoringBounds.width / 2, scoringBounds.height / 2);
+	scoringText.setPosition(sf::Vector2f(viewSize.x * 0.5f, viewSize.y * 0.1f));
+	sf::FloatRect tutorialbounds = tutorialText.getLocalBounds();
+
+	tutorialText.setOrigin(tutorialbounds.width / 2, tutorialbounds.height / 2);
+	tutorialText.setPosition(sf::Vector2f(viewSize.x * 0.5f, viewSize.y * 0.20f));
 
 	hero.init("Assets/graphics/hero.png",
 		sf::Vector2f(viewSize.x * 0.25f, viewSize.y * 0.5f),
@@ -111,6 +152,7 @@ void reset()
 	score = 0;
 	currentTime = 0.0f;
 	prevTime = 0.0f;
+	scoringText.setString("Score:0");
 
 	for (Enemy* enemy : enemies)
 	{
@@ -219,6 +261,12 @@ void update(float dt)
 			{
 				score++;
 
+				std::string finalScore = "Score:" + std::to_string(score);
+				scoringText.setString(finalScore);
+				sf::FloatRect scoringBounds = scoringText.getLocalBounds();
+				scoringText.setOrigin(scoringBounds.width / 2, scoringBounds.height / 2);
+				scoringText.setPosition(sf::Vector2f(viewSize.x * 0.5f, viewSize.y * 0.1f));
+
 				rockets.erase(rockets.begin() + i);
 				enemies.erase(enemies.begin() + j);
 
@@ -248,6 +296,16 @@ void draw()
 	{
 		window.draw(rocket->getSprite());
 	}
+
+	if (isGameover)
+	{
+		window.draw(headingText);
+		window.draw(tutorialText);
+	}
+	else
+	{
+		window.draw(scoringText);
+	}
 }
 
 int main()
@@ -264,8 +322,8 @@ int main()
 		// Update Game 
 		sf::Time dt = clock.restart();
 
-		if(!isGameover)
-		update(dt.asSeconds());
+		if (!isGameover)
+			update(dt.asSeconds());
 
 		window.clear(sf::Color::Red);
 
