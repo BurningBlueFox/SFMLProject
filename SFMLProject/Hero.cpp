@@ -10,24 +10,37 @@ Hero::~Hero()
 
 }
 
-void Hero::init(std::string textureName, sf::Vector2f position, float mass)
+void Hero::init(std::string textureName, int frameCount, float animDuration, sf::Vector2f position, float mass)
 {
 	m_position = position;
 	m_mass = mass;
 
 	m_grounded = false;
 
+
+	m_frameCount = frameCount;
+	m_animDuration = animDuration;
 	//Load texture
 	m_texture.loadFromFile(textureName.c_str());
 
+	m_spriteSize = sf::Vector2i(92, 126);
+
 	//Create sprite and apply texture
 	m_sprite.setTexture(m_texture);
+	m_sprite.setTextureRect(sf::IntRect(0, 0, m_spriteSize.x, m_spriteSize.y));
 	m_sprite.setPosition(m_position);
-	m_sprite.setOrigin(m_texture.getSize().x / 2, m_texture.getSize().y / 2);
+	m_sprite.setOrigin(m_spriteSize.x / 2, m_spriteSize.y / 2);
 }
 
 void Hero::update(float dt)
 {
+	//AnimateSprite
+	m_elapsedTime += dt;
+	int animFrame = static_cast<int>((m_elapsedTime / m_animDuration) * m_frameCount) % m_frameCount;
+	m_sprite.setTextureRect(sf::IntRect(animFrame * m_spriteSize.x, 0, m_spriteSize.x, m_spriteSize.y));
+
+
+	//UpdatePosition
 	m_velocity -= m_mass * m_gravity * dt;
 
 	m_position.y -= m_velocity * dt;

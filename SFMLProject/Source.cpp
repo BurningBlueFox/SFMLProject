@@ -1,5 +1,6 @@
 #pragma once
 #include "SFML/include/SFML/Graphics.hpp"
+#include "SFML/include/SFML/Audio.hpp"
 #include <vector>
 #include "Enemy.h"
 #include "Hero.h"
@@ -20,6 +21,14 @@ sf::Texture bgTexture;
 
 sf::Sprite skySprite;
 sf::Sprite bgSprite;
+
+sf::Music bgMusic;
+
+sf::SoundBuffer fireBuffer;
+sf::SoundBuffer hitBuffer;
+
+sf::Sound fireSound(fireBuffer);
+sf::Sound hitSound(hitBuffer);
 
 Hero hero;
 std::vector<Enemy*> enemies;
@@ -45,6 +54,14 @@ bool playerMoving = false;
 
 void init()
 {
+	//Audio
+	bgMusic.openFromFile("Assets/audio/bgMusic.ogg");
+	bgMusic.setVolume(40.0f);
+	bgMusic.setLoop(true);
+	bgMusic.play();
+
+	hitBuffer.loadFromFile("Assets/audio/hit.ogg");
+	fireBuffer.loadFromFile("Assets/audio/fire.ogg");
 
 	// Load sky Texture 
 	skyTexture.loadFromFile("Assets/graphics/sky.png");
@@ -86,7 +103,7 @@ void init()
 	tutorialText.setOrigin(tutorialbounds.width / 2, tutorialbounds.height / 2);
 	tutorialText.setPosition(sf::Vector2f(viewSize.x * 0.5f, viewSize.y * 0.20f));
 
-	hero.init("Assets/graphics/hero.png",
+	hero.init("Assets/graphics/heroAnim.png", 4, 1.0f,
 		sf::Vector2f(viewSize.x * 0.25f, viewSize.y * 0.5f),
 		200);
 
@@ -130,6 +147,7 @@ void shoot()
 	rocket->init("Assets/graphics/rocket.png", hero.getSprite().getPosition(), 400.0f);
 
 	rockets.push_back(rocket);
+	fireSound.play();
 }
 
 bool checkCollision(sf::Sprite sprite1, sf::Sprite sprite2)
@@ -260,6 +278,7 @@ void update(float dt)
 			if (checkCollision(rocket->getSprite(), enemy->getSprite()))
 			{
 				score++;
+				hitSound.play();
 
 				std::string finalScore = "Score:" + std::to_string(score);
 				scoringText.setString(finalScore);
